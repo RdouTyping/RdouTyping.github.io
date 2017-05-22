@@ -1,0 +1,770 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="ucore,OS," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="最近一直都在跟清华大学的操作系统课程，这个课程最大的特点是有一系列可以实战的操作系统实验。这些实验总共有8个，我在这里记录实验中的一些心得和总结。">
+<meta name="keywords" content="ucore,OS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ucore操作系统实验笔记 - Lab1">
+<meta property="og:url" content="http://yoursite.com/2017/05/20/ucore操作系统实验笔记-Lab1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="最近一直都在跟清华大学的操作系统课程，这个课程最大的特点是有一系列可以实战的操作系统实验。这些实验总共有8个，我在这里记录实验中的一些心得和总结。">
+<meta property="og:image" content="https://pdos.csail.mit.edu/6.828/2007/readings/i386/fig5-6.gif">
+<meta property="og:image" content="https://pdos.csail.mit.edu/6.828/2007/readings/i386/fig5-3.gif">
+<meta property="og:image" content="https://pdos.csail.mit.edu/6.828/2007/readings/i386/fig5-2.gif">
+<meta property="og:image" content="https://i.stack.imgur.com/ItKOI.png">
+<meta property="og:image" content="https://i.stack.imgur.com/Cld0q.png">
+<meta property="og:image" content="http://linuxeco.com/wp-content/uploads/2012/01/Interrupt-Procedure-Call1.png">
+<meta property="og:updated_time" content="2017-05-22T05:15:09.856Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ucore操作系统实验笔记 - Lab1">
+<meta name="twitter:description" content="最近一直都在跟清华大学的操作系统课程，这个课程最大的特点是有一系列可以实战的操作系统实验。这些实验总共有8个，我在这里记录实验中的一些心得和总结。">
+<meta name="twitter:image" content="https://pdos.csail.mit.edu/6.828/2007/readings/i386/fig5-6.gif">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/05/20/ucore操作系统实验笔记-Lab1/"/>
+
+
+
+
+
+  <title>ucore操作系统实验笔记 - Lab1 | Hexo</title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/20/ucore操作系统实验笔记-Lab1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ucore操作系统实验笔记 - Lab1</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-20T00:26:47-07:00">
+                2017-05-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近一直都在跟清华大学的操作系统课程，这个课程最大的特点是有一系列可以实战的操作系统实验。这些实验总共有8个，我在这里记录实验中的一些心得和总结。</p>
+<a id="more"></a>
+<h2 id="Task1"><a href="#Task1" class="headerlink" title="Task1"></a>Task1</h2><p>这个Task主要是为了熟悉Makfile以及如何生成操作系统的镜像文件。Makefile会用就行了，并不用太深入的理解。</p>
+<h2 id="Task2"><a href="#Task2" class="headerlink" title="Task2"></a>Task2</h2><p>这个Task主要是为了熟悉GDB以及熟悉操作系统的启动过程，下面是调试BIOS的一些过程。</p>
+<p>首先修改gdbinit为:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">set architecture i8086</div><div class="line">target remote :1234</div><div class="line">define hook-stop</div><div class="line">x/i $pc</div><div class="line">end</div></pre></td></tr></table></figure></p>
+<p>然后输入<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">make debug</div></pre></td></tr></table></figure></p>
+<p>通过输入<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">x/i $cs</div><div class="line">x/i $eip</div></pre></td></tr></table></figure></p>
+<p>我们可以获取当前 <code>$cs</code> 和 <code>$eip</code> 的值。其中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$cs = 0xf000</div><div class="line">$eip = 0xfff0</div></pre></td></tr></table></figure></p>
+<p>在实模式下，这个地址就是<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$cs &lt;&lt; 4 | $eip = 0xffff0</div></pre></td></tr></table></figure></p>
+<p>我们也可以看看这个地址的指令是什么<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">x/2i 0xffff0</div></pre></td></tr></table></figure></p>
+<p>得到的结果是<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">0xffff0:     ljmp   $0xf000,$0xe05b</div></pre></td></tr></table></figure></p>
+<p>也就是说，BIOS开始的地址应该是<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$cs &lt;&lt; 4 | 0xe05b = 0xfe05b</div></pre></td></tr></table></figure></p>
+<p>此时, 我们设置一个断点到0x7c00:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">b *0x7c00 /* 注意，对于绝对地址来说，需要添加*将其作为地址 */</div></pre></td></tr></table></figure></p>
+<p>然后当程序运行起来后, 最后会停止在 <code>0x7c00</code> 这个地址。这里存放的便是bootloader了。</p>
+<h2 id="Task3"><a href="#Task3" class="headerlink" title="Task3"></a>Task3</h2><p>这个Taks是这5个Taks中最重要的一个。通过这个Task我们可以了解：如何开启A20；CPU是如何从实模式转换到保护模式；如何初始化和使用GDT表。</p>
+<h3 id="如何开启-关闭-A20"><a href="#如何开启-关闭-A20" class="headerlink" title="如何开启/关闭 A20"></a>如何开启/关闭 A20</h3><h4 id="实模式下内存的访问"><a href="#实模式下内存的访问" class="headerlink" title="实模式下内存的访问"></a>实模式下内存的访问</h4><p>在开启A20前，我们先来说说i8086时CPU是如何访问内存空间的。</p>
+<p>在i8086时代，CPU的数据总线是16bit，地址总线是20bit，寄存器是16bit，因此CPU只能访问1MB以内的空间。因为数据总线和寄存器只有16bit，如果需要获取20bit的数据, 我们需要做一些额外的操作，比如移位。实际上，CPU是通过对segment(每个segment大小恒定为64K) 进行移位后和offset一起组成了一个20bit的地址，这个地址就是实模式下访问内存的地址：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">address = segment &lt;&lt; 4 | offset</div></pre></td></tr></table></figure></p>
+<p>理论上，20bit的地址可以访问1MB的内存空间(0x00000 - (2^20 - 1 = 0xFFFFF))。但在实模式下, 这20bit的地址理论上能访问从0x00000 - (0xFFFF0 + 0xFFFF = 0x10FFEF)的内存空间。也就是说，理论上我们可以访问超过1MB的内存空间，但越过0xFFFFF后，地址又会回到0x00000。</p>
+<p>上面这个特征在i8086中是没有任何问题的(因为它最多只能访问1MB的内存空间)，但到了i80286/i80386后，CPU有了更宽的地址总线，数据总线和寄存器后，这就会出现一个问题： 在实模式下, 我们可以访问超过1MB的空间，但我们只希望访问1MB以内的内存空间。为了解决这个问题， CPU中添加了一个可控制A20地址线的模块，通过这个模块，我们在实模式下将第20bit的地址线限制为0，这样CPU就不能访问超过1MB的空间了。进入保护模式后，我们再通过这个模块解除对A20地址线的限制，这样我们就能访问超过1MB的内存空间了。</p>
+<h4 id="A20开启-关闭的过程"><a href="#A20开启-关闭的过程" class="headerlink" title="A20开启/关闭的过程"></a>A20开启/关闭的过程</h4><p>现在使用的CPU都是通过键盘控制器8042来控制A20地址线。默认情况下，A20地址线是关闭的(第20bit的地址线限制为0)，因此在进入保护模式(需要访问超过1MB的内存空间)前，我们需要开启A20地址线(第20bit的地址线可为0或者1)。A20的开启过程请参考bootasm.S文件。</p>
+<h3 id="CPU是如何从实模式转换到保护模式"><a href="#CPU是如何从实模式转换到保护模式" class="headerlink" title="CPU是如何从实模式转换到保护模式"></a>CPU是如何从实模式转换到保护模式</h3><p>这个特别简单，我们需要在开启A20地址线后，将$CR0(control register 0)的PE(bit0)置为1就行了。具体代码请参考bootasm.S文件。</p>
+<h3 id="如何初始化和使用GDT表"><a href="#如何初始化和使用GDT表" class="headerlink" title="如何初始化和使用GDT表"></a>如何初始化和使用GDT表</h3><h4 id="GDT详解"><a href="#GDT详解" class="headerlink" title="GDT详解"></a>GDT详解</h4><p>在使用GDT前，我们需要先来了解什么是GDT。GDT全称是Global Descriptor Table，也就是全局描述符表。在保护模式下，我们通过设置GDT将内存空间被分割为了一个又一个的segment(这些segment是可以重叠的)，这样我们就能实现不同的程序访问不同的内存空间。<br>这和实模式下的寻址方式是不同的, 在实模式下我们只能使用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">address = segment &lt;&lt; 4 | offset</div></pre></td></tr></table></figure></p>
+<p>的方式进行寻址(虽然也是segment + offset的，但在实模式下我们并不会真正的进行分段)。在这种情况下，任何程序都能访问整个1MB的空间。而在保护模式下，通过分段的方式，程序并不能访问整个内存空间。下面引用一段ucore实验报告书上的说明：</p>
+<blockquote>
+<p>【补充】保护模式下，有两个段表：GDT（Global Descriptor Table）和LDT（Local Descriptor Table），每一张段表可以包含8192 (2^13)个描述符<a href="https://pdos.csail.mit.edu/6.828/2007/readings/i386/fig5-6.gif" target="_blank" rel="external">1</a>，因而最多可以同时存在2 * 2^13 = 2^14个段。虽然保护模式下可以有这么多段，逻辑地址空间看起来很大，但实际上段并不能扩展物理地址空间，很大程度上各个段的地址空间是相互重叠的。目前所谓的64TB（2^(14+32)=2^46）逻辑地址空间是一个理论值，没有实际意义。在32位保护模式下，真正的物理空间仍然只有2^32字节那么大。注：在ucore lab中只用到了GDT，没有用LDT。</p>
+<p>Reference: <a href="https://pdos.csail.mit.edu/6.828/2007/readings/i386/fig5-6.gif" target="_blank" rel="external">1</a> 3.5.1 Segment Descriptor Tables, Intel® 64 and IA-32 Architectures Software Developer’s Manual</p>
+</blockquote>
+<p>除了GDT, 我们还需要了解另外几个名词：段描述符(segment descriptor)和段选择子(segment selector)。段描述符就是GDT中的元素，段选择子就是访问GDT的索引。</p>
+<h5 id="段选择子"><a href="#段选择子" class="headerlink" title="段选择子"></a>段选择子</h5><p>在实模式下, 逻辑地址由段选择子和段选择子偏移量组成. 其中, 段选择子16bit, 段选择子偏移量是32bit. 下面是段选择子的示意图:</p>
+<p><img src="https://pdos.csail.mit.edu/6.828/2007/readings/i386/fig5-6.gif" alt="段选择子示意图"></p>
+<ol>
+<li>在段选择子中，其中的INDEX[15:3]是GDT的索引。</li>
+<li>TI[2:2]用于选择表格的类型，1是LDT，0是GDT。</li>
+<li>RPL[1:0]用于选择请求者的特权级，00最高，11最低。</li>
+</ol>
+<h5 id="段描述符"><a href="#段描述符" class="headerlink" title="段描述符"></a>段描述符</h5><p>段描述符的形式比较复杂(为了兼容各种不同版本的CPU)，这里我只给一个示意图，具体的内容请查找手册。这里用到的最重要的是segment base和segment limit：</p>
+<p><img src="https://pdos.csail.mit.edu/6.828/2007/readings/i386/fig5-3.gif" alt="段描述符示意图"></p>
+<h5 id="GDT的访问"><a href="#GDT的访问" class="headerlink" title="GDT的访问"></a>GDT的访问</h5><p>有了上面这些知识，我们可以来看看到底应该怎样通过GDT来获取需要访问的地址了。我们通过这个示意图来讲解：</p>
+<p><img src="https://pdos.csail.mit.edu/6.828/2007/readings/i386/fig5-2.gif" alt="GDT的访问"></p>
+<ol>
+<li>我们根据CPU给的逻辑地址分离出段选择子。   </li>
+<li>利用这个段选择子选择一个段描述符。   </li>
+<li>将段描述符里的Base Address和段选择子的偏移量相加而得到线性地址。这个地址就是我们需要的地址。</li>
+</ol>
+<h4 id="GDT的初始化和使用"><a href="#GDT的初始化和使用" class="headerlink" title="GDT的初始化和使用"></a>GDT的初始化和使用</h4><p>因为在保护模式下我们需要使用分段的内存空间，因此在进入保护模式前，我们就需要初始化GDT。 下面就通过一些代码来说明如何初始化和使用GDT。</p>
+<p>下面是GDT初始化的代码:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">#define SEG_NULLASM                                             \</div><div class="line">    .word 0, 0;                                                 \</div><div class="line">    .byte 0, 0, 0, 0</div><div class="line"></div><div class="line">#define SEG_ASM(type,base,lim)                                  \</div><div class="line">    .word (((lim) &gt;&gt; 12) &amp; 0xffff), ((base) &amp; 0xffff);          \</div><div class="line">    .byte (((base) &gt;&gt; 16) &amp; 0xff), (0x90 | (type)),             \</div><div class="line">        (0xC0 | (((lim) &gt;&gt; 28) &amp; 0xf)), (((base) &gt;&gt; 24) &amp; 0xff)</div><div class="line"></div><div class="line">gdt:</div><div class="line">    /* 有一个特殊的选择子称为空(Null)选择子，它的Index=0，TI=0，而RP</div><div class="line">    L字段可以为任意值。空选择子有特定的用途，当用空选择子进行存储访</div><div class="line">    问时会引起异常。空选择子是特别定义的，它不对应于全局描述符表GDT</div><div class="line">    中的第0个描述符，因此处理器中的第0个描述符总不被处理器访问，一</div><div class="line">    般把它置成全0。*/</div><div class="line">    SEG_NULLASM                                     # null seg</div><div class="line">    </div><div class="line">    /* 在Lab1中, code segment和data segment都可以访问整个内存空间 */</div><div class="line">    SEG_ASM(STA_X|STA_R, 0x0, 0xffffffff)           # code seg for bootloader and kernel</div><div class="line">    SEG_ASM(STA_W, 0x0, 0xffffffff)                 # data seg for bootloader and kernel</div><div class="line"></div><div class="line">gdtdesc:</div><div class="line">    /* lgdt 要先载入GDT的大小, 然后才是gdt的地址 */</div><div class="line">    .word 0x17                                      # sizeof(gdt) - 1</div><div class="line">    .long gdt                                       # address gdt</div></pre></td></tr></table></figure></p>
+<p>理论上GDT可以存在内存中任何位置，但这里我们是在实模式下初始化GDT的，因此GDT应该是存在最低的这1MB内存空间中。CPU通过lgdt指令读入GDT的地址，之后我们就可以使用GDT了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">.set PROT_MODE_CSEG,        0x8   </div><div class="line">.set PROT_MODE_DSEG,        0x10</div><div class="line"></div><div class="line">/* 载入GDT */</div><div class="line">lgdt gdtdesc</div><div class="line"></div><div class="line">/* 从实模式切换到保护模式*/</div><div class="line">movl %cr0, %eax</div><div class="line">orl $CR0_PE_ON, %eax</div><div class="line">movl %eax, %cr0</div><div class="line"></div><div class="line"># ljmp &lt;imm1&gt;, &lt;imm2&gt;</div><div class="line"># %cs ← imm1</div><div class="line"># %ip ← imm2</div><div class="line">/* 将%cs(code segment)的值设置为0x8 */</div><div class="line">ljmp $PROT_MODE_CSEG, $protcseg</div><div class="line"></div><div class="line">...</div><div class="line"></div><div class="line">protcseg:</div><div class="line">    # Set up the protected-mode data segment registers</div><div class="line">    /* 设置data segment 的值 */</div><div class="line">    movw $PROT_MODE_DSEG, %ax                       # Our data segment selector</div><div class="line">    movw %ax, %ds                                   # -&gt; DS: Data Segment</div><div class="line">    movw %ax, %es                                   # -&gt; ES: Extra Segment</div><div class="line">    movw %ax, %fs                                   # -&gt; FS</div><div class="line">    movw %ax, %gs                                   # -&gt; GS</div><div class="line">    movw %ax, %ss                                   # -&gt; SS: Stack Segment</div></pre></td></tr></table></figure>
+<h2 id="Task4"><a href="#Task4" class="headerlink" title="Task4"></a>Task4</h2><p>通过这个Task，我们可以了解OS是如何加载ELF镜像文件的。这里我并没有仔细研究ELF文件格式以及如何使用。</p>
+<h2 id="Task5"><a href="#Task5" class="headerlink" title="Task5"></a>Task5</h2><p>这个task是为了让我们了解函数的调用和堆栈的关系。对于函数调用的细节，我在之前的文章中已经写过了，具体请参见<a href="http://www.jianshu.com/p/e7a22923867f" target="_blank" rel="external">C函数调用过程原理及函数栈帧分析</a>。这里主要分析下代码，源代码在 kern/debug/kdebug.c文件中。 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">/*</div><div class="line">栈底方向      高位地址</div><div class="line">...          </div><div class="line">...          </div><div class="line">参数3        </div><div class="line">参数2        </div><div class="line">参数1        </div><div class="line">返回地址     </div><div class="line">上一层[ebp]   &lt;-------- [esp/当前ebp]</div><div class="line">局部变量      低位地址</div><div class="line">*/</div><div class="line">void</div><div class="line">print_stackframe(void) &#123;</div><div class="line">    uint32_t cur_ebp, cur_eip; </div><div class="line">    uint32_t args[4]; </div><div class="line">    cur_ebp = read_ebp();</div><div class="line">    cur_eip = read_eip();</div><div class="line">    </div><div class="line">    /* 假设最多有20层的函数调用 */</div><div class="line">    for (int stack_level = 0; stack_level &lt; STACKFRAME_DEPTH + 1; stack_level++) &#123;</div><div class="line">        cprintf(&quot;ebp: 0x%08x eip: 0x%08x &quot;, cur_ebp, cur_eip);</div><div class="line">        </div><div class="line">        /* 假设函数最多有4个参数 */</div><div class="line">        for (int arg_num = 0; arg_num &lt; 4; arg_num++)</div><div class="line">            args[arg_num] = *((uint32_t *)cur_ebp + (2 + arg_num));</div><div class="line">        cprintf(&quot;args:0x%08x 0x%08x 0x%08x 0x%08x\n&quot;, args[0], args[1], args[2], args[3]);</div><div class="line">        print_debuginfo(cur_eip);</div><div class="line">        </div><div class="line">        /* 获取上一层函数的返回地址和$ebp的值 */</div><div class="line">        cur_eip = *((uint32_t *)cur_ebp + 1); </div><div class="line">        cur_ebp = *((uint32_t *)cur_ebp);  </div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="Task6"><a href="#Task6" class="headerlink" title="Task6"></a>Task6</h2><p>这个Task主要是为了让我们熟悉保护模式下的中断。在X86架构中，中断可以分为3种：</p>
+<ol>
+<li>和CPU无关的，比如外设的请求等，这些属于Interrupt。</li>
+<li>和CPU有关的，比如除0，page fault等，这些属于Exception。</li>
+<li>系统调用，这些属于Trap</li>
+</ol>
+<h3 id="中断机制"><a href="#中断机制" class="headerlink" title="中断机制"></a>中断机制</h3><blockquote>
+<p>当CPU收到中断(通过8259A完成)或者异常的事件时，它会暂停执行当前的程序或任务，通过一定的机制跳转到负责处理这个信号的相关处理例程中，在完成对这个事件的处理后再跳回到刚才被打断的程序或任务中.</p>
+</blockquote>
+<h3 id="中断向量和中断服务例程"><a href="#中断向量和中断服务例程" class="headerlink" title="中断向量和中断服务例程"></a>中断向量和中断服务例程</h3><p>在X86架构中, 系统最多支持256种不同的中断， 这些中断都有一个相应的中断向量与其对应. 每个中断向量又有一个对应的中断服务例程， 这个中断服务例程用于处理中断向量.  </p>
+<h3 id="IDT"><a href="#IDT" class="headerlink" title="IDT"></a>IDT</h3><p>将中断向量和中断服务例程联系在一起的是IDT(Interrupt Descriptor Table)，输入一个中断向量，我们可以找到并运行该中断向量对应的中断服务例程。IDT和GDT类似，每个描述符都是8K，但IDT的第一项可以包含一个描述符。IDT中的中断描述符可以分为3种：</p>
+<ol>
+<li>Task Gate</li>
+<li>Interrupt Gate</li>
+<li>Trap Gate</li>
+</ol>
+<p>在这个Lab中我们使用了后两种中断描述符.</p>
+<p><img src="https://i.stack.imgur.com/ItKOI.png" alt="中断描述符"></p>
+<p>Interrupt Gate和Trap Gate差不多，但有些微小的区别，我直接引用老师的说明:</p>
+<blockquote>
+<p>【补充】所谓“自动禁止”，指的是CPU跳转到interrupt gate里的地址时，在将EFLAGS保存到栈上之后，清除EFLAGS里的IF位，以避免重复触发中断。在中断处理例程里，操作系统可以将EFLAGS里的IF设上,从而允许嵌套中断。但是必须在此之前做好处理嵌套中断的必要准备，如保存必要的寄存器等。二在ucore中访问Trap Gate的目的是为了实现系统调用。用户进程在正常执行中是不能禁止中断的，而当它发出系统调用后，将通过Trap Gate完成了从用户态（ring 3）的用户进程进了核心态（ring 0）的OS kernel。如果在到达OS kernel后禁止EFLAGS里的IF位，第一没意义（因为不会出现嵌套系统调用的情况），第二还会导致某些中断得不到及时响应，所以调用Trap Gate时，CPU则不会去禁止中断。总之，interrupt gate和trap gate之间没有优先级之分，仅仅是CPU在处理中断时有不同的方法，供操作系统在实现时根据需要进行选择。</p>
+</blockquote>
+<p>根据实际需求，我们建立相应的IDT，在建立好IDT后，我们就需要告诉CPU我们建立的IDT在哪里。要实现这个目的，我们需要使用一个专门的指令lidt将IDT的地址加载到IDTR寄存器中。这样 CPU就通过这个寄存器便可以访问IDT了。在IDTR寄存器中，我们需要存入IDT的起始地址和大小。下面是IDTR寄存器的示意图：</p>
+<p><img src="https://i.stack.imgur.com/Cld0q.png" alt="IDTR寄存器"></p>
+<h3 id="中断实例"><a href="#中断实例" class="headerlink" title="中断实例"></a>中断实例</h3><p>我这里通过该Task的代码来说明如何建立IDT以及如何通过中断向量来访问相应的中断服务例程。</p>
+<h4 id="建立中断向量表"><a href="#建立中断向量表" class="headerlink" title="建立中断向量表"></a>建立中断向量表</h4><p>在这个lab中，中断向量表是__vectors，该表的每一项存储一个中断向量的地址。中断服务例程在__alltraps中被调用。 __alltraps除了调用中断服务例程外，还会做现场保护等工作。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line"># kern/trap/vectors.S</div><div class="line">.globl vector0</div><div class="line">vector0:</div><div class="line">  pushl $0</div><div class="line">  pushl $0</div><div class="line">  jmp __alltraps</div><div class="line">  ...</div><div class="line">.globl vector255</div><div class="line">vector255:</div><div class="line">  pushl $0</div><div class="line">  pushl $255</div><div class="line">  jmp __alltraps</div><div class="line"></div><div class="line"># vector table</div><div class="line">.data</div><div class="line">.globl __vectors</div><div class="line">__vectors:</div><div class="line">  .long vector0</div><div class="line">  .long vector1</div><div class="line">  .long vector2</div><div class="line">  .long vector3</div><div class="line">  ...</div><div class="line">  .long vector255</div><div class="line">  </div><div class="line"># kern/trap/trapentry.S</div><div class="line">.globl __alltraps</div><div class="line">__alltraps:</div><div class="line">    ...</div><div class="line">    # push %esp to pass a pointer to the trapframe as an argument to trap()</div><div class="line">    # 我这里补充一下, 在call __alltraps 之前, $esp指向最后压入的一个参数, 也就是interrupt number(比如pushl $255). 所以说这里 pushl %esp 就是把 $255 在stack中的地址压入stack作为 trap() 的参数</div><div class="line">    pushl %esp</div><div class="line"></div><div class="line">    # call trap(tf), where tf=%esp</div><div class="line">    call trap</div></pre></td></tr></table></figure></p>
+<h4 id="建立IDT"><a href="#建立IDT" class="headerlink" title="建立IDT"></a>建立IDT</h4><p>在这个Lab中，前32个中断向量和T_SYSCALL使用的是Trap Gate；其余的中断向量都是使用Interrupt Gate。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">void</div><div class="line">idt_init(void) &#123;</div><div class="line">    extern uintptr_t __vectors[]; </div><div class="line">    </div><div class="line">    for (int i = 0; i &lt; 256; i++) &#123;</div><div class="line">        if (i &lt; IRQ_OFFSET) &#123; </div><div class="line">            SETGATE(idt[i], 1, GD_KTEXT, __vectors[i], DPL_KERNEL); </div><div class="line">        &#125; else if (i == T_SYSCALL) &#123; </div><div class="line">            SETGATE(idt[i], 1, GD_KTEXT, __vectors[i], DPL_USER);</div><div class="line">        &#125; else &#123; </div><div class="line">            SETGATE(idt[i], 0, GD_KTEXT, __vectors[i], DPL_KERNEL);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    lidt(&amp;idt_pd);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="中断处理流程"><a href="#中断处理流程" class="headerlink" title="中断处理流程"></a>中断处理流程</h4><p>下图是一个简化版的中断处理流程：</p>
+<ol>
+<li>当系统接收到中断后, 会根据中断类型产生一个中断向量。</li>
+<li>用这个中断向量作为索引在IDT中找到相应的中断描述符。</li>
+<li>利用中断描述符中的Segment Selector在GDT中找到相应的Segment。</li>
+<li>将3中找到的Segment和中断描述符中的Offset(也就是中断向量表中存储的中断向量的地址)相加得到中断服务例程的地址。</li>
+<li>调用这个中断服务例程。</li>
+</ol>
+<p>详细的中断处理过程请参考<a href="https://objectkuan.gitbooks.io/ucore-docs/lab1/lab1_3_3_2_interrupt_exception.html" target="_blank" rel="external">中断与异常</a>和<a href="https://objectkuan.gitbooks.io/ucore-docs/lab1/lab1_3_3_3_lab1_interrupt.html" target="_blank" rel="external">lab1中对中断的处理实现</a>.</p>
+<p><img src="http://linuxeco.com/wp-content/uploads/2012/01/Interrupt-Procedure-Call1.png" alt="中断处理过程请"></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ucore/" rel="tag"># ucore</a>
+          
+            <a href="/tags/OS/" rel="tag"># OS</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/05/20/SATA学习笔记1-Link-Layer初认识/" rel="next" title="SATA学习笔记1 - Link Layer初认识">
+                <i class="fa fa-chevron-left"></i> SATA学习笔记1 - Link Layer初认识
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="John Doe" />
+          <p class="site-author-name" itemprop="name">John Doe</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Task1"><span class="nav-number">1.</span> <span class="nav-text">Task1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task2"><span class="nav-number">2.</span> <span class="nav-text">Task2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task3"><span class="nav-number">3.</span> <span class="nav-text">Task3</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#如何开启-关闭-A20"><span class="nav-number">3.1.</span> <span class="nav-text">如何开启/关闭 A20</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#实模式下内存的访问"><span class="nav-number">3.1.1.</span> <span class="nav-text">实模式下内存的访问</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#A20开启-关闭的过程"><span class="nav-number">3.1.2.</span> <span class="nav-text">A20开启/关闭的过程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CPU是如何从实模式转换到保护模式"><span class="nav-number">3.2.</span> <span class="nav-text">CPU是如何从实模式转换到保护模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#如何初始化和使用GDT表"><span class="nav-number">3.3.</span> <span class="nav-text">如何初始化和使用GDT表</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#GDT详解"><span class="nav-number">3.3.1.</span> <span class="nav-text">GDT详解</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#段选择子"><span class="nav-number">3.3.1.1.</span> <span class="nav-text">段选择子</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#段描述符"><span class="nav-number">3.3.1.2.</span> <span class="nav-text">段描述符</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#GDT的访问"><span class="nav-number">3.3.1.3.</span> <span class="nav-text">GDT的访问</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GDT的初始化和使用"><span class="nav-number">3.3.2.</span> <span class="nav-text">GDT的初始化和使用</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task4"><span class="nav-number">4.</span> <span class="nav-text">Task4</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task5"><span class="nav-number">5.</span> <span class="nav-text">Task5</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task6"><span class="nav-number">6.</span> <span class="nav-text">Task6</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#中断机制"><span class="nav-number">6.1.</span> <span class="nav-text">中断机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#中断向量和中断服务例程"><span class="nav-number">6.2.</span> <span class="nav-text">中断向量和中断服务例程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IDT"><span class="nav-number">6.3.</span> <span class="nav-text">IDT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#中断实例"><span class="nav-number">6.4.</span> <span class="nav-text">中断实例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#建立中断向量表"><span class="nav-number">6.4.1.</span> <span class="nav-text">建立中断向量表</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#建立IDT"><span class="nav-number">6.4.2.</span> <span class="nav-text">建立IDT</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#中断处理流程"><span class="nav-number">6.4.3.</span> <span class="nav-text">中断处理流程</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
