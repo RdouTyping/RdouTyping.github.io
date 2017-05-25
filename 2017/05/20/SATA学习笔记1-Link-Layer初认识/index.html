@@ -90,13 +90,13 @@
 
 
 
-<meta name="description" content="最近因为工作原因开始学习SATA，因为这个不涉及公司机密，我就把我学习的内容搬到网上来，这样也方便自己日后查看。这个系列文章是按照我学习的进度而不是按照SATA Specification或者参考书籍的顺序来写的，如果有机会，我会在之后重新调整文章顺序。">
+<meta name="description" content="SATA是一种很常见的硬盘串行接口，但之前一直都没有接触过，最近因为工作原因开始学习SATA，我就把我学习的内容搬到网上来，这样也方便自己日后查看。这个系列文章是按照我学习的进度而不是按照SATA Specification或者参考书籍的顺序来写的，如果有机会，我会在之后重新调整文章顺序。">
 <meta name="keywords" content="SATA,工作相关">
 <meta property="og:type" content="article">
 <meta property="og:title" content="SATA学习笔记1 - Link Layer初认识">
 <meta property="og:url" content="http://yoursite.com/2017/05/20/SATA学习笔记1-Link-Layer初认识/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="最近因为工作原因开始学习SATA，因为这个不涉及公司机密，我就把我学习的内容搬到网上来，这样也方便自己日后查看。这个系列文章是按照我学习的进度而不是按照SATA Specification或者参考书籍的顺序来写的，如果有机会，我会在之后重新调整文章顺序。">
+<meta property="og:description" content="SATA是一种很常见的硬盘串行接口，但之前一直都没有接触过，最近因为工作原因开始学习SATA，我就把我学习的内容搬到网上来，这样也方便自己日后查看。这个系列文章是按照我学习的进度而不是按照SATA Specification或者参考书籍的顺序来写的，如果有机会，我会在之后重新调整文章顺序。">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1134295-4111ba4e6ca4575e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1134295-42c05ca271d24d10.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1134295-45ed6bcc0c7d54dc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
@@ -106,10 +106,10 @@
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1134295-08ddc99486cd3288.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1134295-1d9298ab85042141.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1134295-9ae1f96649d423b4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:updated_time" content="2017-05-22T05:14:37.254Z">
+<meta property="og:updated_time" content="2017-05-25T06:05:40.895Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="SATA学习笔记1 - Link Layer初认识">
-<meta name="twitter:description" content="最近因为工作原因开始学习SATA，因为这个不涉及公司机密，我就把我学习的内容搬到网上来，这样也方便自己日后查看。这个系列文章是按照我学习的进度而不是按照SATA Specification或者参考书籍的顺序来写的，如果有机会，我会在之后重新调整文章顺序。">
+<meta name="twitter:description" content="SATA是一种很常见的硬盘串行接口，但之前一直都没有接触过，最近因为工作原因开始学习SATA，我就把我学习的内容搬到网上来，这样也方便自己日后查看。这个系列文章是按照我学习的进度而不是按照SATA Specification或者参考书籍的顺序来写的，如果有机会，我会在之后重新调整文章顺序。">
 <meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/1134295-4111ba4e6ca4575e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
 
 
@@ -328,7 +328,9 @@
       
 
       
-        <p>最近因为工作原因开始学习SATA，因为这个不涉及公司机密，我就把我学习的内容搬到网上来，这样也方便自己日后查看。这个系列文章是按照我学习的进度而不是按照SATA Specification或者参考书籍的顺序来写的，如果有机会，我会在之后重新调整文章顺序。</p>
+        <blockquote>
+<p>SATA是一种很常见的硬盘串行接口，但之前一直都没有接触过，最近因为工作原因开始学习SATA，我就把我学习的内容搬到网上来，这样也方便自己日后查看。这个系列文章是按照我学习的进度而不是按照SATA Specification或者参考书籍的顺序来写的，如果有机会，我会在之后重新调整文章顺序。</p>
+</blockquote>
 <a id="more"></a>
 <p>Link Layer主要负责FIS的传输和接收，FIS是什么呢？FIS就是Frame Information Structure的简写，SATA的Host和Device间都是通过FIS进行通信的，我会在之后的文章中单独介绍FIS。它通过一系列的办法(比如添加CRC，进行8bit/10bit编码解码，对数据和primitive进行scramble)保证FIS能顺利地在Host和Device间进行传输，下面是Linker Layer的示意图：</p>
 <p><img src="http://upload-images.jianshu.io/upload_images/1134295-4111ba4e6ca4575e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Link Layer.png"></p>
@@ -478,7 +480,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-count">3</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>

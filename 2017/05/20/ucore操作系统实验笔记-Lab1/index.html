@@ -90,23 +90,23 @@
 
 
 
-<meta name="description" content="最近一直都在跟清华大学的操作系统课程，这个课程最大的特点是有一系列可以实战的操作系统实验。这些实验总共有8个，我在这里记录实验中的一些心得和总结。">
+<meta name="description" content="最近一直都在跟清华大学的操作系统课程，这个课程最大的特点是有一系列可以实战的操作系统实验。这些实验总共有8个，我在这里记录实验中的一些心得和总结。在本实验中，我们将会了解实模式到保护模式的切换、GDT、中断机制等。">
 <meta name="keywords" content="ucore,OS">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ucore操作系统实验笔记 - Lab1">
 <meta property="og:url" content="http://yoursite.com/2017/05/20/ucore操作系统实验笔记-Lab1/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="最近一直都在跟清华大学的操作系统课程，这个课程最大的特点是有一系列可以实战的操作系统实验。这些实验总共有8个，我在这里记录实验中的一些心得和总结。">
+<meta property="og:description" content="最近一直都在跟清华大学的操作系统课程，这个课程最大的特点是有一系列可以实战的操作系统实验。这些实验总共有8个，我在这里记录实验中的一些心得和总结。在本实验中，我们将会了解实模式到保护模式的切换、GDT、中断机制等。">
 <meta property="og:image" content="https://pdos.csail.mit.edu/6.828/2007/readings/i386/fig5-6.gif">
 <meta property="og:image" content="https://pdos.csail.mit.edu/6.828/2007/readings/i386/fig5-3.gif">
 <meta property="og:image" content="https://pdos.csail.mit.edu/6.828/2007/readings/i386/fig5-2.gif">
 <meta property="og:image" content="https://i.stack.imgur.com/ItKOI.png">
 <meta property="og:image" content="https://i.stack.imgur.com/Cld0q.png">
 <meta property="og:image" content="http://linuxeco.com/wp-content/uploads/2012/01/Interrupt-Procedure-Call1.png">
-<meta property="og:updated_time" content="2017-05-22T05:15:09.856Z">
+<meta property="og:updated_time" content="2017-05-25T06:09:00.694Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ucore操作系统实验笔记 - Lab1">
-<meta name="twitter:description" content="最近一直都在跟清华大学的操作系统课程，这个课程最大的特点是有一系列可以实战的操作系统实验。这些实验总共有8个，我在这里记录实验中的一些心得和总结。">
+<meta name="twitter:description" content="最近一直都在跟清华大学的操作系统课程，这个课程最大的特点是有一系列可以实战的操作系统实验。这些实验总共有8个，我在这里记录实验中的一些心得和总结。在本实验中，我们将会了解实模式到保护模式的切换、GDT、中断机制等。">
 <meta name="twitter:image" content="https://pdos.csail.mit.edu/6.828/2007/readings/i386/fig5-6.gif">
 
 
@@ -325,7 +325,9 @@
       
 
       
-        <p>最近一直都在跟清华大学的操作系统课程，这个课程最大的特点是有一系列可以实战的操作系统实验。这些实验总共有8个，我在这里记录实验中的一些心得和总结。</p>
+        <blockquote>
+<p>最近一直都在跟清华大学的操作系统课程，这个课程最大的特点是有一系列可以实战的操作系统实验。这些实验总共有8个，我在这里记录实验中的一些心得和总结。<br>在本实验中，我们将会了解实模式到保护模式的切换、GDT、中断机制等。</p>
+</blockquote>
 <a id="more"></a>
 <h2 id="Task1"><a href="#Task1" class="headerlink" title="Task1"></a>Task1</h2><p>这个Task主要是为了熟悉Makfile以及如何生成操作系统的镜像文件。Makefile会用就行了，并不用太深入的理解。</p>
 <h2 id="Task2"><a href="#Task2" class="headerlink" title="Task2"></a>Task2</h2><p>这个Task主要是为了熟悉GDB以及熟悉操作系统的启动过程，下面是调试BIOS的一些过程。</p>
@@ -468,6 +470,10 @@
 
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2017/05/24/ucore操作系统实验笔记-重新理解中断/" rel="prev" title="ucore操作系统实验笔记 - 重新理解中断">
+                ucore操作系统实验笔记 - 重新理解中断 <i class="fa fa-chevron-right"></i>
+              </a>
+            
           </div>
         </div>
       
@@ -538,7 +544,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-count">3</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
