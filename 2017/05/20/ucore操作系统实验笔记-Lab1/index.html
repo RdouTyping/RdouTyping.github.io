@@ -103,7 +103,7 @@
 <meta property="og:image" content="https://i.stack.imgur.com/ItKOI.png">
 <meta property="og:image" content="https://i.stack.imgur.com/Cld0q.png">
 <meta property="og:image" content="http://linuxeco.com/wp-content/uploads/2012/01/Interrupt-Procedure-Call1.png">
-<meta property="og:updated_time" content="2017-05-25T06:09:00.694Z">
+<meta property="og:updated_time" content="2017-05-27T06:44:32.161Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ucore操作系统实验笔记 - Lab1">
 <meta name="twitter:description" content="最近一直都在跟清华大学的操作系统课程，这个课程最大的特点是有一系列可以实战的操作系统实验。这些实验总共有8个，我在这里记录实验中的一些心得和总结。在本实验中，我们将会了解实模式到保护模式的切换、GDT、中断机制等。">
@@ -213,6 +213,16 @@
         </li>
       
         
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
         <li class="menu-item menu-item-archives">
           <a href="/archives" rel="section">
             
@@ -266,7 +276,7 @@
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Ruitao Dou">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/uploads/Me and My Wife.JPG">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
@@ -410,7 +420,7 @@
 <h3 id="中断实例"><a href="#中断实例" class="headerlink" title="中断实例"></a>中断实例</h3><p>我这里通过该Task的代码来说明如何建立IDT以及如何通过中断向量来访问相应的中断服务例程。</p>
 <h4 id="建立中断向量表"><a href="#建立中断向量表" class="headerlink" title="建立中断向量表"></a>建立中断向量表</h4><p>在这个lab中，中断向量表是__vectors，该表的每一项存储一个中断向量的地址。中断服务例程在__alltraps中被调用。 __alltraps除了调用中断服务例程外，还会做现场保护等工作。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line"># kern/trap/vectors.S</div><div class="line">.globl vector0</div><div class="line">vector0:</div><div class="line">  pushl $0</div><div class="line">  pushl $0</div><div class="line">  jmp __alltraps</div><div class="line">  ...</div><div class="line">.globl vector255</div><div class="line">vector255:</div><div class="line">  pushl $0</div><div class="line">  pushl $255</div><div class="line">  jmp __alltraps</div><div class="line"></div><div class="line"># vector table</div><div class="line">.data</div><div class="line">.globl __vectors</div><div class="line">__vectors:</div><div class="line">  .long vector0</div><div class="line">  .long vector1</div><div class="line">  .long vector2</div><div class="line">  .long vector3</div><div class="line">  ...</div><div class="line">  .long vector255</div><div class="line">  </div><div class="line"># kern/trap/trapentry.S</div><div class="line">.globl __alltraps</div><div class="line">__alltraps:</div><div class="line">    ...</div><div class="line">    # push %esp to pass a pointer to the trapframe as an argument to trap()</div><div class="line">    # 我这里补充一下, 在call __alltraps 之前, $esp指向最后压入的一个参数, 也就是interrupt number(比如pushl $255). 所以说这里 pushl %esp 就是把 $255 在stack中的地址压入stack作为 trap() 的参数</div><div class="line">    pushl %esp</div><div class="line"></div><div class="line">    # call trap(tf), where tf=%esp</div><div class="line">    call trap</div></pre></td></tr></table></figure></p>
 <h4 id="建立IDT"><a href="#建立IDT" class="headerlink" title="建立IDT"></a>建立IDT</h4><p>在这个Lab中，前32个中断向量和T_SYSCALL使用的是Trap Gate；其余的中断向量都是使用Interrupt Gate。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">void</div><div class="line">idt_init(void) &#123;</div><div class="line">    extern uintptr_t __vectors[]; </div><div class="line">    </div><div class="line">    for (int i = 0; i &lt; 256; i++) &#123;</div><div class="line">        if (i &lt; IRQ_OFFSET) &#123; </div><div class="line">            SETGATE(idt[i], 1, GD_KTEXT, __vectors[i], DPL_KERNEL); </div><div class="line">        &#125; else if (i == T_SYSCALL) &#123; </div><div class="line">            SETGATE(idt[i], 1, GD_KTEXT, __vectors[i], DPL_USER);</div><div class="line">        &#125; else &#123; </div><div class="line">            SETGATE(idt[i], 0, GD_KTEXT, __vectors[i], DPL_KERNEL);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    lidt(&amp;idt_pd);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span></span></div><div class="line"><span class="title">idt_init</span><span class="params">(<span class="keyword">void</span>)</span> &#123;</div><div class="line">    <span class="keyword">extern</span> <span class="keyword">uintptr_t</span> __vectors[]; </div><div class="line">    </div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">256</span>; i++) &#123;</div><div class="line">        <span class="keyword">if</span> (i &lt; IRQ_OFFSET) &#123; </div><div class="line">            SETGATE(idt[i], <span class="number">1</span>, GD_KTEXT, __vectors[i], DPL_KERNEL); </div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (i == T_SYSCALL) &#123; </div><div class="line">            SETGATE(idt[i], <span class="number">1</span>, GD_KTEXT, __vectors[i], DPL_USER);</div><div class="line">        &#125; <span class="keyword">else</span> &#123; </div><div class="line">            SETGATE(idt[i], <span class="number">0</span>, GD_KTEXT, __vectors[i], DPL_KERNEL);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    lidt(&amp;idt_pd);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <h4 id="中断处理流程"><a href="#中断处理流程" class="headerlink" title="中断处理流程"></a>中断处理流程</h4><p>下图是一个简化版的中断处理流程：</p>
 <ol>
 <li>当系统接收到中断后, 会根据中断类型产生一个中断向量。</li>
@@ -537,7 +547,7 @@
       <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
-               src="/images/avatar.gif"
+               src="/uploads/Me and My Wife.JPG"
                alt="Ruitao Dou" />
           <p class="site-author-name" itemprop="name">Ruitao Dou</p>
            
