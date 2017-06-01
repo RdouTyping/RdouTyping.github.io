@@ -101,7 +101,7 @@
 <meta property="og:image" content="https://www.cs.rutgers.edu/~pxk/416/notes/images/09a-ia32-seg_paging.png">
 <meta property="og:image" content="http://wiki.osdev.org/images/9/94/Page_dir.png">
 <meta property="og:image" content="http://wiki.osdev.org/images/9/9b/Page_table.png">
-<meta property="og:updated_time" content="2017-05-29T05:34:44.025Z">
+<meta property="og:updated_time" content="2017-05-31T07:16:18.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ucore操作系统实验笔记-Lab2">
 <meta name="twitter:description" content="这是ucore Lab2的实验笔记，这个实验要我们填写的内容不算很难，但实验外的东西却很值得研究。Lab1和Lab2是这门课实验的一道坎，要想完成接下来的实验，这两个实验一定要搞懂。通过这个实验，我们可以了解系统内存的探测，内存物理页的管理，ucore不同阶段的地址映射等。">
@@ -362,7 +362,7 @@
 <p>我们下面来看看程序是如何初始化物理内存空间的页信息的。</p>
 <h3 id="物理内存空间管理的初始化的过程"><a href="#物理内存空间管理的初始化的过程" class="headerlink" title="物理内存空间管理的初始化的过程"></a>物理内存空间管理的初始化的过程</h3><p>物理内存空间的初始化可以分为以下4步：</p>
 <ol>
-<li>根据物理内存空间探测的结果， 找到最后一个可用空间的结束地址(或者Kernel的结束地址，选一个小的) 根据这个结束地址计算出整个可用的物理内存空间一共有多少个页。</li>
+<li>根据物理内存空间探测的结果， 找到最后一个可用空间的结束地址(ucore中就是0x07FDFFFF)或者KMEMSIZE(0x38000000)，选一个小的。根据这个结束地址计算出整个可用的物理内存空间一共有多少个页。</li>
 <li>找到Kernel的结束地址(end)，这个地址是在kernel.ld中定义的， 我们从这个地址所在的下一个页开始(pages)写入系统页的信息(将所有的Page写入这个地址)</li>
 <li>从pages开始，将所有页的信息的flag都设置为reserved(不可用)</li>
 <li>找到free页的开始地址， 并初始化所有free页的信息(free页就是除了kernel和页信息外的可用空间，初始化的过程会reset flag中的reserved位)</li>
@@ -391,9 +391,11 @@
 </blockquote>
 <h3 id="第二阶段"><a href="#第二阶段" class="headerlink" title="第二阶段"></a>第二阶段</h3><p>这个阶段就是从entry.S的kern_entry到pmm.c的enable_paging()。 这个阶段就比较复杂了，我们先来看bootmain.c这个文件：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">#define ELFHDR          ((struct elfhdr *)0x10000)      // scratch space</div></pre></td></tr></table></figure>
-<p>bootmain.c中的函数被调用时候还处于第一阶段， 所以从上面这个宏定义我们可以知道kernel是被放在物理地址为0x10000的内存空间。我们再来看看链接文件kernel.ld，</p>
+<p>bootmain.c中的函数被调用时候还处于第一阶段， <del>所以从上面这个宏定义我们可以知道kernel是被放在物理地址为0x10000的内存空间。</del> 通过上面的宏我们可以知道ELFHDR从硬盘的第一个扇区读出后放在了内存中的0x10000这个位置。 这个地址和kernel载入的地址没有任何关系。kernel的载入地址在链接文件kernel.ld中定义，</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">/* Load the kernel at this address: &quot;.&quot; means the current address */</div><div class="line">    . = 0xC0100000;</div></pre></td></tr></table></figure>
-<p>连接文件将kernel链接到了0xC0100000(这是Higher Half Kernel， 具体参考<a href="http://wiki.osdev.org/Higher_Half_Kernel" target="_blank" rel="external">Higher Half Kernel</a>)，这个地址是kernel的虚拟地址。 由于此时系统还只是采用段式映射，如果我们还是使用</p>
+<p>链接文件将kernel链接到了0xC0100000(这是Higher Half Kernel， 具体参考<a href="http://wiki.osdev.org/Higher_Half_Kernel" target="_blank" rel="external">Higher Half Kernel</a>)，这个地址是kernel的虚拟地址。 链接文件kernel.ld定义了ucore的链接地址，bootmain.c这个文件定义了ucore的加载地址，</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/* p_va是段的第一个字节将被放到内存中的虚拟地址 */</span></div><div class="line"><span class="keyword">for</span> (; ph &lt; eph; ph ++) &#123;</div><div class="line">    readseg(ph-&gt;p_va &amp; <span class="number">0xFFFFFF</span>, ph-&gt;p_memsz, ph-&gt;p_offset);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>从这个地方我们可以看出，ucore实际加载的物理地址应该是0x00FFFFFF &amp; ucore虚拟地址，所以结合链接地址，我们可以知道ucore加载的物理地址是0x00100000。由于此时系统还只是采用段式映射，如果我们还是使用</p>
 <blockquote>
 <p>virt addr = linear addr = phy addr</p>
 </blockquote>
@@ -408,7 +410,7 @@
 <blockquote>
 <p>virt addr = linear addr = phy addr</p>
 </blockquote>
-<p>所以通过REALLOC(__gdtdesc)来将__gdtdesc的虚拟地址转换为物理地址，这样，lgdt才能真正的找到GDT存储的地方。</p>
+<p>所以通过REALLOC(__gdtdesc)来将__gdtdesc的虚拟地址转换为物理地址，这样，lgdt才能真正的找到GDT存储的地方。第三，bootmain.c中，我们使用物理地址来定位到了entry.S的kern_entry，所以我们可以在载入新的GDT前正确的运行lgdt REALLOC(__gdtdesc)这条语句。</p>
 <h3 id="第三阶段"><a href="#第三阶段" class="headerlink" title="第三阶段"></a>第三阶段</h3><p>这个阶段是从kmm.c的enable_paging()到kmm.c的gdt_init()。 这个阶段是最复杂的阶段，我们开启了页机制， 并且在boot_map_segment()中将线性地址按照如下规则进行映射：</p>
 <blockquote>
 <p>linear addr - 0xC0000000 = phy addr</p>
