@@ -90,21 +90,26 @@
 
 
 
-<meta name="description" content="在上一篇文章ucore操作系统实验笔记 - Lab1中，我已经比较详细地记录了中断的使用。那篇文章关于中断的重点是如何使用IDT、中断描述符和中断向量表等。这篇文章我将把重点放到另外一个地方，也就是中断的过程中如何保存和恢复现场。">
+<meta name="description" content="(03/08/2017更新) 在上一篇文章ucore操作系统实验笔记 - Lab1中，我已经比较详细地记录了中断的使用。那篇文章关于中断的重点是如何使用IDT、中断描述符和中断向量表等。这篇文章我将把重点放到另外一个地方，也就是中断的过程中如何保存和恢复现场。 现在实验已经做到Lab5了，我对中断有了一些新的的理解，因此我准备重新梳理下中断相关知识。">
 <meta name="keywords" content="ucore,OS">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ucore操作系统实验笔记 - 重新理解中断">
 <meta property="og:url" content="http://yoursite.com/2017/05/24/ucore操作系统实验笔记-重新理解中断/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="在上一篇文章ucore操作系统实验笔记 - Lab1中，我已经比较详细地记录了中断的使用。那篇文章关于中断的重点是如何使用IDT、中断描述符和中断向量表等。这篇文章我将把重点放到另外一个地方，也就是中断的过程中如何保存和恢复现场。">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1134295-e41fac7e41233f26.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1134295-42507a0b1c9e11f9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1134295-d1387f7269dfb618.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:updated_time" content="2017-05-27T06:44:25.802Z">
+<meta property="og:description" content="(03/08/2017更新) 在上一篇文章ucore操作系统实验笔记 - Lab1中，我已经比较详细地记录了中断的使用。那篇文章关于中断的重点是如何使用IDT、中断描述符和中断向量表等。这篇文章我将把重点放到另外一个地方，也就是中断的过程中如何保存和恢复现场。 现在实验已经做到Lab5了，我对中断有了一些新的的理解，因此我准备重新梳理下中断相关知识。">
+<meta property="og:image" content="https://i.stack.imgur.com/ItKOI.png">
+<meta property="og:image" content="https://i.stack.imgur.com/Cld0q.png">
+<meta property="og:image" content="http://static.duartes.org/img/blogPosts/interruptDescriptorWithPrivilegeCheck.png">
+<meta property="og:image" content="http://static.duartes.org/img/blogPosts/segmentSelectorDataAndCode.png">
+<meta property="og:image" content="http://static.duartes.org/img/blogPosts/segmentProtection.png">
+<meta property="og:image" content="https://blog.packagecloud.io/images/isr_stack.png">
+<meta property="og:image" content="https://pdos.csail.mit.edu/6.828/2010/readings/i386/fig9-4.gif">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1134295-d1387f7269dfb618.png">
+<meta property="og:updated_time" content="2017-08-05T06:36:56.045Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ucore操作系统实验笔记 - 重新理解中断">
-<meta name="twitter:description" content="在上一篇文章ucore操作系统实验笔记 - Lab1中，我已经比较详细地记录了中断的使用。那篇文章关于中断的重点是如何使用IDT、中断描述符和中断向量表等。这篇文章我将把重点放到另外一个地方，也就是中断的过程中如何保存和恢复现场。">
-<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/1134295-e41fac7e41233f26.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta name="twitter:description" content="(03/08/2017更新) 在上一篇文章ucore操作系统实验笔记 - Lab1中，我已经比较详细地记录了中断的使用。那篇文章关于中断的重点是如何使用IDT、中断描述符和中断向量表等。这篇文章我将把重点放到另外一个地方，也就是中断的过程中如何保存和恢复现场。 现在实验已经做到Lab5了，我对中断有了一些新的的理解，因此我准备重新梳理下中断相关知识。">
+<meta name="twitter:image" content="https://i.stack.imgur.com/ItKOI.png">
 
 
 
@@ -338,38 +343,86 @@
 
       
         <blockquote>
-<p>在上一篇文章<a href="https://rdoutyping.github.io/2017/05/20/ucore%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%AE%9E%E9%AA%8C%E7%AC%94%E8%AE%B0-Lab1/" target="_blank" rel="external">ucore操作系统实验笔记 - Lab1</a>中，我已经比较详细地记录了中断的使用。那篇文章关于中断的重点是如何使用IDT、中断描述符和中断向量表等。这篇文章我将把重点放到另外一个地方，也就是中断的过程中如何保存和恢复现场。</p>
+<p>(03/08/2017更新) 在上一篇文章<a href="https://rdoutyping.github.io/2017/05/20/ucore%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%AE%9E%E9%AA%8C%E7%AC%94%E8%AE%B0-Lab1/" target="_blank" rel="external">ucore操作系统实验笔记 - Lab1</a>中，我已经比较详细地记录了中断的使用。<del>那篇文章关于中断的重点是如何使用IDT、中断描述符和中断向量表等。这篇文章我将把重点放到另外一个地方，也就是中断的过程中如何保存和恢复现场。</del> 现在实验已经做到Lab5了，我对中断有了一些新的的理解，因此我准备重新梳理下中断相关知识。</p>
 </blockquote>
 <a id="more"></a>
-<h2 id="CPU接收到中断信号后会做什么"><a href="#CPU接收到中断信号后会做什么" class="headerlink" title="CPU接收到中断信号后会做什么"></a>CPU接收到中断信号后会做什么</h2><blockquote>
+<h2 id="中断的类型"><a href="#中断的类型" class="headerlink" title="中断的类型"></a>中断的类型</h2><p>在x86系统中，中断一般分为3种：</p>
 <ol>
-<li>CPU在执行完当前程序的每一条指令后，都会去确认在执行刚才的指令过程中中断控制器（如：8259A）是否发送中断请求过来，如果有那么CPU就会在相应的时钟脉冲到来时从总线上读取中断请求对应的中断向量； </li>
-<li>CPU根据得到的中断向量（以此为索引）到IDT中找到该向量对应的中断描述符，中断描述符里保存着中断服务例程的段选择子； </li>
-<li>CPU使用IDT查到的中断服务例程的段选择子从GDT中取得相应的段描述符，段描述符里保存了中断服务例程的段基址和属性信息，此时CPU就得到了中断服务例程的起始地址，并跳转到该地址； </li>
-<li>CPU会根据CPL和中断服务例程的段描述符的DPL信息确认是否发生了特权级的转换。比如当前程序正运行在用户态，而中断程序是运行在内核态的，则意味着发生了特权级的转换，这时CPU会从当前程序的TSS信息（该信息在内存中的起始地址存在TR寄存器中）里取得该程序的内核栈地址，即包括内核态的ss和esp的值，并立即将系统当前使用的栈切换成新的内核栈。这个栈就是即将运行的中断服务程序要使用的栈。紧接着就将当前程序使用的用户态的ss和esp压到新的内核栈中保存起来； </li>
-<li>CPU需要开始保存当前被打断的程序的现场（即一些寄存器的值），以便于将来恢复被打断的程序继续执行。这需要利用内核栈来保存相关现场信息，即依次压入当前被打断程序使用的eflags，cs，eip，errorCode（如果是有错误码的异常）信息； </li>
+<li>和CPU无关的，比如外设的请求等，这些属于Interrupt，这种中断是非同步的。</li>
+<li>和CPU有关的，比如除0，page fault等，这些属于Exception，这种中断是同步的。</li>
+<li>系统调用，这些属于Trap。</li>
+</ol>
+<p>Interrupt和Exception我们都可以认为它们是Hard Interrupt，Trap被称为Soft Interrupt，后面我会讲它们的区别。</p>
+<h2 id="IDT"><a href="#IDT" class="headerlink" title="IDT"></a>IDT</h2><p>IDT是Interrupt Descriptor Table的简写，我们使用中断向量号访问IDT从而找到中断号对应的中断服务例程。IDT和GDT类似，由一系列的中断门描述符(Interrupt Gate Descriptor)组成，每个门描述符都是8K。这些中断门描述符可以分为3类：</p>
+<ol>
+<li>Task Gate</li>
+<li>Interrupt Gate</li>
+<li>Trap Gate</li>
+</ol>
+<p>我们先来看看这3类中断门描述符的结构：<br><img src="https://i.stack.imgur.com/ItKOI.png" alt="中断描述符"></p>
+<p>ucore实验只使用了后面两种门描述符，从这幅图我们可以看出Interrupt Gate和Trap Gate唯一的区别就是高32bit中的bit8不同。我这里引用实验指导书中的说明：</p>
+<blockquote>
+<p>【补充】所谓“自动禁止”，指的是CPU跳转到interrupt gate里的地址时，在将EFLAGS保存到栈上之后，清除EFLAGS里的IF位，以避免重复触发中断。在中断处理例程里，操作系统可以将EFLAGS里的IF设上,从而允许嵌套中断。但是必须在此之前做好处理嵌套中断的必要准备，如保存必要的寄存器等。二在ucore中访问Trap Gate的目的是为了实现系统调用。用户进程在正常执行中是不能禁止中断的，而当它发出系统调用后，将通过Trap Gate完成了从用户态（ring 3）的用户进程进了核心态（ring 0）的OS kernel。如果在到达OS kernel后禁止EFLAGS里的IF位，第一没意义（因为不会出现嵌套系统调用的情况），第二还会导致某些中断得不到及时响应，所以调用Trap Gate时，CPU则不会去禁止中断。总之，interrupt gate和trap gate之间没有优先级之分，仅仅是CPU在处理中断时有不同的方法，供操作系统在实现时根据需要进行选择。</p>
+</blockquote>
+<p>简单来说就是Interrupt发生时会自动禁止中断(清除EFLAGS中的IF位)，而Trap发生时不会这样。</p>
+<p>当我们建立好IDT后，我们就需要告诉CPU我们将IDT存在了哪里。在ring 0 特权级，也就是处于kernel态时，我们可以通过lidt将IDT的地址和大小加载到IDTR寄存器中，之后CPU就能通过访问该寄存器来获取IDT的起始地址了。下面是IDTR寄存器的示意图：</p>
+<p><img src="https://i.stack.imgur.com/Cld0q.png" alt="IDTR寄存器示意图"></p>
+<h2 id="中断的访问流程"><a href="#中断的访问流程" class="headerlink" title="中断的访问流程"></a>中断的访问流程</h2><p>我们先来看看指导书是怎么说中断的执行流程(开始部分)：</p>
+<blockquote>
+<ol>
+<li>CPU在执行完当前程序的每一条指令后，都会去确认在执行刚才的指令过程中中断控制器（如：8259A）是否发送中断请求过来，如果有那么CPU就会在相应的时钟脉冲到来时从总线上读取中断请求对应的中断向量；</li>
+<li>CPU根据得到的中断向量（以此为索引）到IDT中找到该向量对应的中断描述符，中断描述符里保存着中断服务例程的段选择子；</li>
+<li>CPU使用IDT查到的中断服务例程的段选择子从GDT中取得相应的段描述符，段描述符里保存了中断服务例程的段基址和属性信息，此时CPU就得到了中断服务例程的起始地址，并跳转到该地址；</li>
+<li>CPU会根据CPL和中断服务例程的段描述符的DPL信息确认是否发生了特权级的转换。比如当前程序正运行在用户态，而中断程序是运行在内核态的，则意味着发生了特权级的转换，这时CPU会从当前程序的TSS信息（该信息在内存中的起始地址存在TR寄存器中）里取得该程序的内核栈地址，即包括内核态的ss和esp的值，并立即将系统当前使用的栈切换成新的内核栈。这个栈就是即将运行的中断服务程序要使用的栈。紧接着就将当前程序使用的用户态的ss和esp压到新的内核栈中保存起来；</li>
+<li>CPU需要开始保存当前被打断的程序的现场（即一些寄存器的值），以便于将来恢复被打断的程序继续执行。这需要利用内核栈来保存相关现场信息，即依次压入当前被打断程序使用的eflags，cs，eip，errorCode（如果是有错误码的异常）信息；</li>
 <li>CPU利用中断服务例程的段描述符将其第一条指令的地址加载到cs和eip寄存器中，开始执行中断服务例程。这意味着先前的程序被暂停执行，中断服务程序正式开始工作。</li>
 </ol>
 </blockquote>
-<p>上面这些内容是我从ucore实验指导书上直接摘抄下来的，在之前那篇文章中，我主要关注前3步和最后一步，这篇文章，我将关注第4、5步。</p>
-<h3 id="特权级转换的检测"><a href="#特权级转换的检测" class="headerlink" title="特权级转换的检测"></a>特权级转换的检测</h3><p>我个人觉得第4、5步应该是发生在CPU跳转到ISR(中断服务例程)之前，所以把第3步放在第5步的后面更合适，之后我会解释为什么我这么觉得。当CPU获取到IDT中的中断描述符后，会对特权级的转换进行一次检测，具体检测如下图所示：</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/1134295-e41fac7e41233f26.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="特权级转换的检测"></p>
-<p>当CPU获取了中断描述符后，CPU会用中断描述符的DPL和当前段选择子的CPL进行比较，从而判断是否需要进行特权级的转换。同时，它还会做一些列的检测工作，比如对于硬中断而言，CPL一定要大于等于DPL，因为特权级是向着更高特权级或者平级转换的。而对于软中断而言，转换后的特权级不能超过转换前的特权级，这是为了防止用户代码随意触发中断。对于CPL和DPL不同的情况，我们需要使用TSS来对内核栈进行切换，关于TSS的内容我之后会单独开篇文章。</p>
-<h2 id="内核栈的变化"><a href="#内核栈的变化" class="headerlink" title="内核栈的变化"></a>内核栈的变化</h2><p>第4、5步一个重要的功能就是向内核栈中压入各种寄存器。压入这些寄存器既可以起到保存现场的作用，又能让ISR知道中断的各种信息，所以这两步是很重要的。我们来看看哪些寄存器是CPU必须压入内核栈的：</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/1134295-42507a0b1c9e11f9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="内核栈的变化"></p>
-<p>这是发生中断并且特权级转换后栈空间变化的示意图，对于不发生特权级转换的中断，有两个地方不同，第一，它只用到一个栈，也就是说Procedure和Handler用的是同一个栈；第二，CPU不需要压入SS和ESP。除此之外，这两种情况都需要压入CS，EIP和Error Code(如果有的话)。之所以我说第3步应该在第5步后，原因就在这里，如果先跳到了ISR，那么压入的EIP就是ISR中的EIP了，并不是中断前的EIP，因此我们应该在第3步前完成步骤4和5。</p>
-<h2 id="Trapframe和ISR"><a href="#Trapframe和ISR" class="headerlink" title="Trapframe和ISR"></a>Trapframe和ISR</h2><p>除了CPU要压入的各种寄存器，我们还需要压入其他一些寄存器用于保存现场和提供给ISR中断信息。在ucore中，我们使用结构体trapframe来将保存的寄存器传给ISR。下面就先来看看trapframe：</p>
+<p>下面是中断的执行流程(结束部分)：</p>
+<blockquote>
+<ol>
+<li>程序执行这条iret指令时，首先会从内核栈里弹出先前保存的被打断的程序的现场信息，即eflags，cs，eip重新开始执行；</li>
+<li>如果存在特权级转换（从内核态转换到用户态），则还需要从内核栈中弹出用户态栈的ss和esp，这样也意味着栈也被切换回原先使用的用户态的栈了；</li>
+<li>如果此次处理的是带有错误码（errorCode）的异常，CPU在恢复先前程序的现场时，并不会弹出errorCode。这一步需要通过软件完成，即要求相关的中断服务例程在调用iret返回之前添加出栈代码主动弹出errorCode。</li>
+</ol>
+</blockquote>
+<p>有了这些信息，我们基本就对中断有了一些定性的了解了。接下来我们仔细看看每一个步骤具体做了什么。</p>
+<h3 id="产生中断向量"><a href="#产生中断向量" class="headerlink" title="产生中断向量"></a>产生中断向量</h3><p>这一步是硬件产生的，CPU会不断的检查是否有中断产生。如果发现有新的中断产生了，它就会获取该中断向量。并用该中断向量去IDT中寻找相应的中断门描述符。</p>
+<h3 id="寻找中断门描述符"><a href="#寻找中断门描述符" class="headerlink" title="寻找中断门描述符"></a>寻找中断门描述符</h3><p>CPU获取中断向量后，它就可以用这个中断向量作为IDT的索引去寻找对应的中断门描述符了。</p>
+<h3 id="特权级的检测"><a href="#特权级的检测" class="headerlink" title="特权级的检测"></a>特权级的检测</h3><p>在CPU获取到中断门描述符后，首先要做的就是检测特权级，那该怎么检测呢？我们先来看一幅图：<br><img src="http://static.duartes.org/img/blogPosts/interruptDescriptorWithPrivilegeCheck.png" alt="特权级检测"></p>
+<p>首先，我们需要了解几个名词 - CPL和DPL：<br>CPL是current privilege level，它的值一般等于当前段描述符的DPL，它存储在%cs中的bit1 : bit0；DPL是descriptor privilege level，注意这里有两个DPL，分别是Gate的DPL和目标段描述符的DPL。<br>这里还有RPL(requestor’s privilege level)，它存储在%ds, %es, %ss等中，和CPL一样，也是bit1 : bit0(所有的选择子中都有RPL，只是我们习惯叫%cs中的RPL为CPL)。<br><img src="http://static.duartes.org/img/blogPosts/segmentSelectorDataAndCode.png" alt="CPL和RPL"></p>
+<p>一般情况下CPL, RPL和DPL要满足以下公式：</p>
+<blockquote>
+<p>MAX(CPL, RPL) &lt;= 段描述符DPL</p>
+</blockquote>
+<p>加上RPL是为了多一层保护，比如CPL为0而%ds中的RPL为3，那么要想访问DPL为0的段选择子(%cs)就不行。如果CPL为3而%ds中的RPL为0，同样不能访问DPL为0的段选择子(%cs)。<br><img src="http://static.duartes.org/img/blogPosts/segmentProtection.png" alt="CPL, RPL和DPL"></p>
+<p>除了检测CPL, RPL和DPL外，这里还要做一些特权级的检测，比如CPL和目标段描述符DPL的比较，CPL和Gate DPL的比较等，下面看看具体的规则：</p>
+<ol>
+<li>CPL必须要大于等于目标段描述符的DPL，也就是说，中断只能朝着更高特权级或者平级的方向移动。</li>
+<li>如果是INT x造成的中断(软中断)，那么CPL必须小于等于Gate的DPL。利用这点，一般我们会将除了系统调用外的所有中断门的DPL都设置为0，将系统调用的中断门的DPL设置为3。这样用户态使用INT x时，只有使用了正确的x才能成功完成系统调用。</li>
+<li>如果是硬中断的话，不用判断CPL和Gate的DPL，用户进程能直接通过中断进入内核态。</li>
+</ol>
+<p>注意，现在的操作系统并没有怎么使用段的特权级来限制用户态访问内核空间。不管是用户态还是内核态，不管是数据段还是代码段，所有的段都是用相同的起始地址和大小，因此这也被称为”flat memory”。也就是说即使在用户态，只要正确地设置CPL, RPL和DPL，CPU依然可以访问所有的内存空间。现在的操作系统都是通过分页机制实现特权级的限制。在中断中，其实特权级检测也没太大作用，只要正确的设置就不会出错，要出错除非将IDT设置错了，或者%cs和%ds设置错了(比如%cs是用户态而%ds是内核态)。</p>
+<h3 id="CPU压栈"><a href="#CPU压栈" class="headerlink" title="CPU压栈"></a>CPU压栈</h3><p>如果特权级的检测没有问题，那么CPU就会将一些寄存器压入进程的堆栈中，CPU的压栈情况如下图所示：<br><img src="https://blog.packagecloud.io/images/isr_stack.png" alt="此处输入图片的描述"></p>
+<p>这是发生中断并且特权级发生转换后栈空间变化的示意图，在压入寄存器前，CPU需要更新%ss和%esp(需要使用TSS)，使其指向新的栈空间。对于不发生特权级转换的中断，有二个地方不同，第一，它只用到一个栈，也就是说Procedure和Handler用的是同一个栈，CPU不需要更新%ss和%esp；第二，CPU不需要压入SS和ESP。除此之外，这两种情况都需要压入CS，EIP和Error Code(如果有的话)。</p>
+<h3 id="寻找中断处理例程的入口"><a href="#寻找中断处理例程的入口" class="headerlink" title="寻找中断处理例程的入口"></a>寻找中断处理例程的入口</h3><p>CPU通过中断向量号找到IDT中中断门描述符，中断门描述符中存有目标段选择子以及中断处理例程的offset。我们将目标段选择子以及中断处理例程的offset分别载入%cs和%eip，从而使CPU跳到中断处理例程的入口，同时设置CPL == 目标段描述符的DPL。下面是一个流程示意图：<br><img src="https://pdos.csail.mit.edu/6.828/2010/readings/i386/fig9-4.gif" alt="寻找中断处理例程的入口"></p>
+<h3 id="保存中断前的各种寄存器"><a href="#保存中断前的各种寄存器" class="headerlink" title="保存中断前的各种寄存器"></a>保存中断前的各种寄存器</h3><p>CPU负责将%cs, %eip, %ss, %esp EFLAGS等信息压入堆栈，而其他的一些信息，比如错误码、中断向量、通用寄存器(pushal)、%ds, %es等就需要内核来完成。</p>
+<h3 id="执行中断服务例程"><a href="#执行中断服务例程" class="headerlink" title="执行中断服务例程"></a>执行中断服务例程</h3><p>根据中断向量的信息，执行相应的中断服务例程。</p>
+<p>当中断服务例程结束后，我们就需要进行中断的返回了。</p>
+<h3 id="弹出栈中存储的寄存器等信息"><a href="#弹出栈中存储的寄存器等信息" class="headerlink" title="弹出栈中存储的寄存器等信息"></a>弹出栈中存储的寄存器等信息</h3><p>内核将错误码、中断向量、通用寄存器(popal)、%ds, %es, %ss等弹出，然后通过iret来将%cs, %eip, %ss, %esp EFLAGS等弹出。这样，我们就恢复了中断前的状态。</p>
+<p>上面我们定性的了解了中断的整个过程，下面我们通过代码来看看ucore是如何处理中断的。</p>
+<h2 id="Trapframe和ISR"><a href="#Trapframe和ISR" class="headerlink" title="Trapframe和ISR"></a>Trapframe和ISR</h2><p>在ucore中，我们使用结构体trapframe来将保存的寄存器传给ISR。下面就先来看看trapframe：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">/* registers as pushed by pushal */</div><div class="line">struct pushregs &#123;</div><div class="line">    uint32_t reg_edi;</div><div class="line">    uint32_t reg_esi;</div><div class="line">    uint32_t reg_ebp;</div><div class="line">    uint32_t reg_oesp;          /* Useless */</div><div class="line">    uint32_t reg_ebx;</div><div class="line">    uint32_t reg_edx;</div><div class="line">    uint32_t reg_ecx;</div><div class="line">    uint32_t reg_eax;</div><div class="line">&#125;;</div><div class="line"></div><div class="line">struct trapframe &#123;</div><div class="line">    struct pushregs tf_regs;</div><div class="line">    uint16_t tf_gs;</div><div class="line">    uint16_t tf_padding0;</div><div class="line">    uint16_t tf_fs;</div><div class="line">    uint16_t tf_padding1;</div><div class="line">    uint16_t tf_es;</div><div class="line">    uint16_t tf_padding2;</div><div class="line">    uint16_t tf_ds;</div><div class="line">    uint16_t tf_padding3;</div><div class="line">    uint32_t tf_trapno;</div><div class="line">    /* below here defined by x86 hardware */</div><div class="line">    uint32_t tf_err;</div><div class="line">    uintptr_t tf_eip;</div><div class="line">    uint16_t tf_cs;</div><div class="line">    uint16_t tf_padding4;</div><div class="line">    uint32_t tf_eflags;</div><div class="line">    /* below here only when crossing rings, such as from user to kernel */</div><div class="line">    uintptr_t tf_esp;</div><div class="line">    uint16_t tf_ss;</div><div class="line">    uint16_t tf_padding5;</div><div class="line">&#125; __attribute__((packed));</div></pre></td></tr></table></figure>
 <p>其中pushregs中的寄存器都是pushal中需要压入栈的所有寄存器。有了这个数据结构后，我们就可以在中断后获取中断的信息，并将它传给ISR，ISR会根据传入的trapframe来进行相应的操作。<br>下面我们来看看如何给trapframe赋值，如何将trapframe传给ISR：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">.globl vector2</div><div class="line">vector2:</div><div class="line">  pushl $0</div><div class="line">  pushl $2</div><div class="line">  jmp __alltraps</div></pre></td></tr></table></figure>
-<p>上面这段代码是中断向量2，在第6步时CPU会执行这里的指令。它首先压入0和2，0是error code(对于没有error code的中断，ISR会压入0作为error code；如果中断有error code，这里就不会压入0)，2是中断向量号。注意，在这之前，CPU已经压入了EFLAGS，CS，EIP和Error Code(如果有的话)。在压入error code和中断向量号后，CPU跳到__alltraps，__alltraps会将所有中断需要保存的寄存器存到内核栈，然后将此时栈顶的地址($esp)作为参数传给trap()，trap()会将此时栈中压入的各种寄存器整体当成trapframe来处理。trap()会会根据trapframe中的内容，对中断进行相应的处理。</p>
+<p>上面这段代码是中断向量2，在第6步时CPU会执行这里的指令。它首先压入0和2，0是error code(对于没有error code的中断，ISR会压入0作为error code；如果中断有error code，这里就会压入相应的error code)，2是中断向量号。注意，在这之前，CPU已经压入了EFLAGS，CS，EIP和Error Code(如果有的话)。在压入error code和中断向量号后，CPU跳到__alltraps，__alltraps会将所有中断需要保存的寄存器存到内核栈，然后将此时栈顶的地址($esp)作为参数传给trap()，trap()会将此时栈中压入的各种寄存器整体当成trapframe来处理。trap()会会根据trapframe中的内容，对中断进行相应的处理。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">.text</div><div class="line">.globl __alltraps</div><div class="line">__alltraps:</div><div class="line">    # push registers to build a trap frame</div><div class="line">    # therefore make the stack look like a struct trapframe</div><div class="line">    pushl %ds</div><div class="line">    pushl %es</div><div class="line">    pushl %fs</div><div class="line">    pushl %gs</div><div class="line">    pushal</div></pre></td></tr></table></figure>
 <p>这段代码将所有中断需要保存的寄存器压入内核栈。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"># load GD_KDATA into %ds and %es to set up data segments for kernel</div><div class="line">   movl $GD_KDATA, %eax</div><div class="line">   movw %ax, %ds</div><div class="line">   movw %ax, %es</div></pre></td></tr></table></figure>
-<p>这段代码将此时的数据段和附加段设置为内核的数据段(ISR是位于kernel的)。</p>
+<p>这段代码将此时的数据段和附加段设置为内核的数据段(ISR是位于kernel的)，代码段在载入IDT中的选择子时被设置为内核代码段。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"># push %esp to pass a pointer to the trapframe as an argument to trap()</div><div class="line">   pushl %esp</div><div class="line"></div><div class="line">   # call trap(tf), where tf=%esp</div><div class="line">   call trap</div></pre></td></tr></table></figure>
 <p>这段代码先将%esp的值压入内核栈，%esp的值将作为函数trap()的参数，然后我们再call trap。通过向栈中压入各种寄存器的信息并且将栈顶的地址作为trapframe的地址，我们完成了对trapframe的赋值。trap()函数接收到trapframe后就可以根据中断类型做出相应处理了。我们来看看此时栈中的情况：</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/1134295-d1387f7269dfb618.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="内核栈"></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1134295-d1387f7269dfb618.png" alt="内核栈"></p>
 <p>因为栈是从高地址向低地址生长的，因此，栈中蓝色部分EFLAGS地址最高，EDI地址最低。这个和trapframe中的元素也是吻合的，tf_eflags地址最高(如何不考虑tf_esp, tf_ss)，而reg_edi地址最低。因此我们可以通过Old ESP这个地址，把栈中蓝色部分当成trapframe来处理。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"># pop the pushed stack pointer</div><div class="line">    popl %esp</div><div class="line"></div><div class="line">    # return falls through to trapret...</div><div class="line">.globl __trapret</div><div class="line">__trapret:</div><div class="line">    # restore registers from stack</div><div class="line">    popal</div><div class="line"></div><div class="line">    # restore %ds, %es, %fs and %gs</div><div class="line">    popl %gs</div><div class="line">    popl %fs</div><div class="line">    popl %es</div><div class="line">    popl %ds</div><div class="line"></div><div class="line">    # get rid of the trap number and error code</div><div class="line">    addl $0x8, %esp</div><div class="line">    iret</div></pre></td></tr></table></figure>
 <p>当trap()运行结束后，我们需要将寄存器恢复到中断前的状态。在这里，我们只需要将内核栈中的内容分别弹出，并保存到相应的寄存器即可。最后，通过调用iret指令来恢复EIP，CS和EFLAGS。如果还存在特权级的转化，我们还需要弹出之前保存的SS和ESP。到此为止，整个中断的过程就结束了。</p>
@@ -587,7 +640,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#CPU接收到中断信号后会做什么"><span class="nav-number">1.</span> <span class="nav-text">CPU接收到中断信号后会做什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#特权级转换的检测"><span class="nav-number">1.1.</span> <span class="nav-text">特权级转换的检测</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内核栈的变化"><span class="nav-number">2.</span> <span class="nav-text">内核栈的变化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Trapframe和ISR"><span class="nav-number">3.</span> <span class="nav-text">Trapframe和ISR</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#中断的类型"><span class="nav-number">1.</span> <span class="nav-text">中断的类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IDT"><span class="nav-number">2.</span> <span class="nav-text">IDT</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#中断的访问流程"><span class="nav-number">3.</span> <span class="nav-text">中断的访问流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#产生中断向量"><span class="nav-number">3.1.</span> <span class="nav-text">产生中断向量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#寻找中断门描述符"><span class="nav-number">3.2.</span> <span class="nav-text">寻找中断门描述符</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#特权级的检测"><span class="nav-number">3.3.</span> <span class="nav-text">特权级的检测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CPU压栈"><span class="nav-number">3.4.</span> <span class="nav-text">CPU压栈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#寻找中断处理例程的入口"><span class="nav-number">3.5.</span> <span class="nav-text">寻找中断处理例程的入口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#保存中断前的各种寄存器"><span class="nav-number">3.6.</span> <span class="nav-text">保存中断前的各种寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#执行中断服务例程"><span class="nav-number">3.7.</span> <span class="nav-text">执行中断服务例程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#弹出栈中存储的寄存器等信息"><span class="nav-number">3.8.</span> <span class="nav-text">弹出栈中存储的寄存器等信息</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Trapframe和ISR"><span class="nav-number">4.</span> <span class="nav-text">Trapframe和ISR</span></a></li></ol></div>
             
 
           </div>
