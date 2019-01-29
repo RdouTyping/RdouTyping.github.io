@@ -96,20 +96,25 @@
 
 
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://yoursite.com/index.html">
+  <meta name="description" content="vim中的substitute(:s)和linux中的sed使用有点类似，但功能没sed那么大，不过基本的一些命令还是差不多的。现在我介绍几个平时我会用到的命令。">
+<meta name="keywords" content="vim">
+<meta property="og:type" content="article">
+<meta property="og:title" content="VIM Substitute 使用">
+<meta property="og:url" content="http://yoursite.com/2019/01/27/VIM-Substitute-使用-md/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="vim中的substitute(:s)和linux中的sed使用有点类似，但功能没sed那么大，不过基本的一些命令还是差不多的。现在我介绍几个平时我会用到的命令。">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-01-28T01:52:20.458Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hexo">
+<meta name="twitter:title" content="VIM Substitute 使用">
+<meta name="twitter:description" content="vim中的substitute(:s)和linux中的sed使用有点类似，但功能没sed那么大，不过基本的一些命令还是差不多的。现在我介绍几个平时我会用到的命令。">
 
 
 
 
 
 
-  <link rel="canonical" href="http://yoursite.com/">
+  <link rel="canonical" href="http://yoursite.com/2019/01/27/VIM-Substitute-使用-md/">
 
 
 
@@ -119,7 +124,7 @@
   };
 </script>
 
-  <title>Hexo</title>
+  <title>VIM Substitute 使用 | Hexo</title>
   
 
 
@@ -167,8 +172,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-  page-home">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
@@ -206,7 +210,7 @@
         
         
           
-          <li class="menu-item menu-item-home menu-item-active">
+          <li class="menu-item menu-item-home">
 
     
     
@@ -319,177 +323,9 @@
           
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/29/splint使用以及一些遇到的坑/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Rdou">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/29/splint使用以及一些遇到的坑/" class="post-title-link" itemprop="url">splint使用以及一些遇到的坑</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-01-29 11:47:20 / 修改时间：12:42:00" itemprop="dateCreated datePublished" datetime="2019-01-29T11:47:20-08:00">2019-01-29</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/工具使用/" itemprop="url" rel="index"><span itemprop="name">工具使用</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><h3 id="Linux"><a href="#Linux" class="headerlink" title="Linux"></a>Linux</h3><p>参考官网<a href="http://splint.org/source.html" target="_blank" rel="noopener">Source Code Installation</a></p>
-<h3 id="Windows"><a href="#Windows" class="headerlink" title="Windows"></a>Windows</h3><p>同样参考官网<a href="http://splint.org/win32.html" target="_blank" rel="noopener">Win32 Installation</a></p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/01/29/splint使用以及一些遇到的坑/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
 
   
 
@@ -521,10 +357,8 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/27/VIM-Substitute-使用-md/" class="post-title-link" itemprop="url">VIM Substitute 使用</a>
+          <h1 class="post-title" itemprop="name headline">VIM Substitute 使用
+
               
             
           </h1>
@@ -606,18 +440,24 @@
       
 
       
-        
-          <p>vim中的substitute(:s)和linux中的sed使用有点类似，但功能没sed那么大，不过基本的一些命令还是差不多的。现在我介绍几个平时我会用到的命令。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/01/27/VIM-Substitute-使用-md/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
+        <p>vim中的substitute(:s)和linux中的sed使用有点类似，但功能没sed那么大，不过基本的一些命令还是差不多的。现在我介绍几个平时我会用到的命令。</p>
+<a id="more"></a>
+<h2 id="基本命令"><a href="#基本命令" class="headerlink" title="基本命令"></a>基本命令</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:%s/foo/bar/g</span><br></pre></td></tr></table></figure>
+<p>这条命令是将整个文件中的<code>foo</code>替换成<code>bar</code> , 这里的<code>foo</code> 是一切包括<code>foo</code> 的字符串。</p>
+<p><code>%</code> 是指整个文件，如果没有<code>%</code> 那么就只对当前行起作用；<code>g</code> 是指整行，如果没有<code>g</code> 的话，只针对该行的第一个匹配。</p>
+<p>注意，在sed中可以使用数字，比如1, 2, 3来替换<code>g</code> 表示替换第1,2,3个匹配的字符串；但在vim中这么做的效果是替换包括当前行在内的N行中的第一个匹配。这和下面的另一个命令是等效的。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:%s/\&lt;foo\&gt;/bar/g</span><br></pre></td></tr></table></figure>
+<p>添加<code>\&lt;</code> 和 <code>\&gt;</code> 后就只会替换完全匹配的字符串。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:%s/\&lt;foo\&gt;/bar/gI</span><br></pre></td></tr></table></figure>
+<p>加入<code>I</code> 后，替换时要考虑大小写。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:.,+2s/foo/bar/g or :.,<span class="variable">$s</span>/foo/bar/g</span><br></pre></td></tr></table></figure>
+<p>第一个命令是替换当前行以及其后的2行中匹配的字符串；第二个命令是替换当前行到最后一行（包括）中匹配的字符串。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:5,12s/foo/bar/g</span><br></pre></td></tr></table></figure>
+<p>替换文件中第5到12（包括）行中匹配的字符串。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\zsAB or CD\ze</span><br></pre></td></tr></table></figure>
+<p><code>\zs</code> 和 <code>\ze</code> 在上面的例子中分别表示匹配以<code>AB</code> 开头的字符串和以<code>CD</code> 结尾的字符串。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="http://vim.wikia.com/wiki/Search_and_replace" target="_blank" rel="noopener">http://vim.wikia.com/wiki/Search_and_replace</a></p>
+
       
     </div>
 
@@ -638,181 +478,40 @@
 
     <footer class="post-footer">
       
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/26/如何用malloc-生成2-N字节对齐-Byte-Align-的地址？/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Rdou">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/26/如何用malloc-生成2-N字节对齐-Byte-Align-的地址？/" class="post-title-link" itemprop="url">如何用malloc()生成2^N字节对齐(Byte Align)的地址？</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-01-26 00:29:42 / 修改时间：23:57:07" itemprop="dateCreated datePublished" datetime="2019-01-26T00:29:42-08:00">2019-01-26</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
+        <div class="post-tags">
           
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/C-C-语言/" itemprop="url" rel="index"><span itemprop="name">C/C++语言</span></a></span>
-
-                
-                
-              
-            </span>
+            <a href="/tags/vim/" rel="tag"># vim</a>
           
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
         </div>
-      </header>
-    
+      
 
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
+      
       
       
 
       
-        
-          <h2 id="什么是字节对齐-Byte-Align-的地址？"><a href="#什么是字节对齐-Byte-Align-的地址？" class="headerlink" title="什么是字节对齐(Byte Align)的地址？"></a>什么是字节对齐(Byte Align)的地址？</h2><p>X Byte Align的地址就是数据存储的地址是X的整数倍。这里我主要讨论一类特殊情况：X是2^N的Byte Align，比如最常见的4、8、16 Byte Align。在讨论如何使用malloc() - 或者类似函数生成这种Byte Align的地址前，我们先来看看如何将一个已知的非Byte Align的地址转换成Byte Align的地址。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/01/26/如何用malloc-生成2-N字节对齐-Byte-Align-的地址？/#more" rel="contents">
-                阅读全文 &raquo;
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/01/26/如何用malloc-生成2-N字节对齐-Byte-Align-的地址？/" rel="next" title="如何用malloc()生成2^N字节对齐(Byte Align)的地址？">
+                <i class="fa fa-chevron-left"></i> 如何用malloc()生成2^N字节对齐(Byte Align)的地址？
               </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
+            
+          </div>
 
-    
+          <span class="post-nav-divider"></span>
 
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/01/29/splint使用以及一些遇到的坑/" rel="prev" title="splint使用以及一些遇到的坑">
+                splint使用以及一些遇到的坑 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
       
 
       
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -822,14 +521,15 @@
   </article>
 
 
-    
-  </section>
-
-  
+  </div>
 
 
           </div>
           
+
+  
+
+
 
         </div>
         
@@ -850,8 +550,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <div class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
@@ -927,6 +636,23 @@
         </div>
       </div>
 
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本命令"><span class="nav-number">1.</span> <span class="nav-text">基本命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">2.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
       
 
       
@@ -1057,6 +783,10 @@
 
 
   
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
 
   
 
@@ -1067,6 +797,8 @@
 
   
 
+
+  
 
 
   
